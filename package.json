@@ -1,0 +1,22 @@
+{
+  "name": "plural-chat-electron",
+  "version": "1.0.0",
+  "description": "application for helping communication between plural systems",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "clean": "rm -rf node_modules",
+    "build": "npm build",
+    "reinstall": "npm run clean && npm install",
+    "rebuild": "npm run clean && npm install && npm run build"
+  },
+  "author": "cherry",
+  "license": "ISC",
+  "dependencies": {
+    "jquery": "^3.6.0",
+    "vue": "^2.6.14"
+  },
+  "devDependencies": {
+    "electron": "^13.1.8"
+  }
+}

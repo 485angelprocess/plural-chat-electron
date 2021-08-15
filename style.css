@@ -1,0 +1,67 @@
+body{
+    height: 100%;
+}
+
+.messagewindow{
+  height: 90%;
+}
+.messages{
+  font-size: 1em;
+  height: 50em;
+  max-width: 50em;
+  width: 100%;
+}
+
+.messagefeed{
+  background-color: #0F258F;
+  height: 80%;
+  overflow: scroll;
+}
+
+.messagebox{
+  width: 90%;
+}
+
+.messagebox p{
+  padding: 1em;
+}
+
+.messageSender{
+  float:right;
+  margin-left: 5%;
+  background-color: #AEBDEA;
+}
+.messageRecipient{
+  float:left;
+  margin-left: 10%;
+  background-color: #EBB0E4;
+}
+
+.messagerecipientfield{
+  font-size: 10px;
+}
+
+.messagedatefield{
+  font-size: 10px;
+}
+
+.messageinput{
+  height: 10%;
+  padding: 10px;
+}
+
+.messageinput input{
+  width: 80%;
+  font-size: 2em;
+}
+
+.alteractiveselect{
+  background-color: #000AEB;
+  color: #FFFFFF;
+}
+
+#preferenceswindow div{
+  background-color: #EEEEEE;
+  padding: 1em;
+  margin: 1em;
+}

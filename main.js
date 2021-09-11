@@ -142,6 +142,68 @@ ipcMain.on('system-write', (event, arg) => {
   event.reply("system-write-log", "wrote " + newalter['name'] + " to system");
 });
 
+/****************************************/
+// system-write
+//  create new message server
+//  {
+//    "name": "servername"
+//  }
+// returns async "server-response" string message
+ipcMain.on('server-write', (event, arg) => {
+  console.log("Creating message server", arg.name);
+  if (!arg.name){
+    event.reply("server-response", "no server name specified");
+    return null;
+  }
+  for (s in pluralchatData.message.data){
+    if (s === arg.name){
+      event.reply("server-response", "server already exists");
+      return null;
+    }
+  }
+  pluralchatData.message.data[arg.name] = [];
+  pluralchatData.message.write();
+  event.reply("server-response", "server " + arg.name + " created");
+});
+
+/************************************/
+// server-delete
+// delete a server from message server
+// {
+//  "name": "servername"
+// }
+// returns async "server-reponse" string message
+ipcMain.on('server-delete', (event, arg) => {
+  console.log("Deleting server", arg.name);
+  if (!arg.name){
+    event.reply("server-response", "no server name specified");
+    return null;
+  }
+  for (s in pluralchatData.message.data){
+    if (s === arg.name){
+      delete pluralchatData.message.data[arg.name];
+      pluralchatData.message.write();
+      console.log("Deleted server", arg.name);
+      event.reply("server-response", "deleted server " + arg.name);
+      return null;
+    }
+  }
+  event.reply("server-response", "server does not exist");
+});
+
+/***************************************/
+// server-read
+// get names of all servers
+// returns sync array of string tags
+ipcMain.on('server-read', (event, arg) => {
+  tags = [];
+  for (key in pluralchatData.message.data){
+    tags.push(key);
+  }
+  console.log("Sending servers", tags)
+  event.returnValue = tags;
+});
+
 ipcMain.on('message-read', (event, arg) => {
   /*
   Get message data

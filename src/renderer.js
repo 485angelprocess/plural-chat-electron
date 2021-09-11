@@ -74,24 +74,36 @@ Vue.component('message-window', {
     selectAlter: function(alter){
       // Select new active alter for message context
       this.$emit("login", alter);
+    },
+    selectServer: function(server){
+      /* Select active message server and reload messages */
+      this.channel = server;
     }
   },
   template: `
     <div id="messagewindow">
+
+      <div class="alterselection">
+        <alter-id
+          v-for="item in system"
+          v-bind:activealter="activealter"
+          v-bind:alter="item"
+          v-bind:key="item.id"
+          v-on:select-alter="selectAlter"
+        ></alter-id>
+      </div>
+
       <button class="windowcontrolbutton"
         v-on:click="$emit('switchwindow', 'preferences')">
         Preferences
       </button>
 
-      <alter-id
-        v-for="item in system"
-        v-bind:activealter="activealter"
-        v-bind:alter="item"
-        v-bind:key="item.id"
-        v-on:select-alter="selectAlter"
-      ></alter-id>
-
       <h1>{{ activealterdisplay }}</h1>
+
+      <server-select
+        v-bind:activeserver="channel"
+        v-on:changeServer="selectServer">
+      </server-select>
 
       <message-feed
         v-bind:alter="activealter"
@@ -117,6 +129,9 @@ Vue.component('message-feed',{
       this.loadmessages();
     },
     number: function(){
+      this.loadmessages();
+    },
+    tag: function(){
       this.loadmessages();
     }
   },
@@ -215,14 +230,17 @@ Vue.component('message', {
         return false;
       }
       return (this.msg.sender) === this.alter.name;
-    }
+    },
   },
   template:`
       <div class="messagebox">
       <p :class="[{ messageSender }, messageSender ? '' : 'messageRecipient']">
-      <span class="messagetext">{{ msg.text }}</span>
-      <span class="messagerecipientfield">[{{ msg.sender }} to {{ msg.target }}]</span>
-      <span class="messagedatefield">{{ datedisplay }}</span></p>
+        <span class="messagetext" v-if=!messageSender>&rarr;</span>
+        <span class="messagetext">{{ msg.text }}</span>
+        <span class="messagerecipientfield">[{{ msg.sender }} to {{ msg.target }}]</span>
+        <span class="messagedatefield">{{ datedisplay }}</span>
+        <span class="messagetext" v-if=messageSender>&larr;</span>
+      </p>
       </div>`
 });
 
@@ -297,9 +315,14 @@ Vue.component('preferences-window', {
         v-on:new-user-added="$emit('reload-system')">
       </add-alter-form>
 
+      <add-server-form>
+      </add-server-form>
+
+      <delete-server-form/>
+
       <clear-data-form
         v-bind:fields="configfields"
-        v-bind:requestype="'configfile'"
+        v-bind:requesttype="'configfile'"
         v-bind:prompt="'data'">
       </clear-data-form>
 
@@ -310,6 +333,49 @@ Vue.component('preferences-window', {
         v-on:cleared-data="$emit('reload-system')">
       </clear-data-form>
     </div>
+  `
+});
+
+Vue.component('server-select', {
+  /* select servers for messaging */
+  props: ['activeserver'],
+  data: function(){
+    return {
+      servers: []
+    }
+  },
+  created() {
+    this.loadServers();
+  },
+  methods: {
+    loadServers: function(){
+        const serverlist = ipcRenderer.sendSync('server-read', '');
+        this.servers = [];
+        for (var i = 0; i < serverlist.length; i++){
+          this.servers.push({key: i, server: serverlist[i]});
+        }
+    }
+  },
+  template: `
+    <div class=serverwindow>
+      <server-display
+        v-for="s in servers"
+        v-bind:key=s.key
+        v-bind:servername=s.server
+        v-bind:selected="s.server === activeserver"
+        v-on:selectServer="$emit('changeServer', s.server)">
+      </server-display>
+    </div>
+  `
+});
+
+Vue.component('server-display', {
+  props: ['servername', 'selected'],
+  template: `
+    <button class="serverdisplay" v-on:click="$emit('selectServer', servername)">
+      <span v-if=selected> * </span>
+      {{ servername }}
+    </button>
   `
 });
 
@@ -450,8 +516,92 @@ Vue.component('clear-data-form', {
   `
 });
 
-Vue.component('add-user-form', {
-  /* Add user to system */
+Vue.component('add-server-form', {
+  /*
+    Add new servers / tags
+  */
+  data: function(){
+    return {
+      name: "",
+      reply: ""
+    }
+  },
+  methods: {
+    addServer: function(){
+      /* Send API request and await async log message
+      */
+      console.log("Adding server", this.name);
+      ipcRenderer.on('server-response', (event, arg) => {
+        this.reply = arg
+      });
+      ipcRenderer.send('server-write', {
+        name: this.name
+      });
+    }
+  },
+  template: `
+    <div class="addserverform">
+      <p>Add new server:</p>
+      <span>Server name:</span>
+      <input v-model="name"></input>
+
+      <button v-on:click="addServer">Add Server</button>
+      <p>{{reply}}</p>
+    </div>
+  `
+})
+
+Vue.component('delete-server-form', {
+  data: function(){
+    return {
+      servername: "",
+      reply: ""
+    }
+  },
+  computed: {
+    servers: function(){
+      return this.loadServers();
+    }
+  },
+  methods: {
+    loadServers: function(){
+      const serverlist = ipcRenderer.sendSync('server-read', '');
+      var servers = [];
+      for (var i = 0; i < serverlist.length; i++){
+        servers.push({key: i, server: serverlist[i]});
+      }
+      return servers;
+    },
+    deleteServerRequest: function(){
+      /* Request server delete through API */
+      ipcRenderer.on('server-response', (event, arg) => {
+        this.reply = arg
+        this.servers = this.loadServers();
+      });
+      ipcRenderer.send('server-delete', {
+        "name": this.servername
+      });
+    }
+  },
+  template: `
+    <div class="deleteserverform">
+      <label for="servernameselect">Delete server:</label>
+      <select
+        name="servernameselect"
+        v-model="servername">
+        <option
+          v-for="s in servers"
+          :value="s.server"
+          :key="s.id">
+          {{ s.server }}
+        </option>
+      </select>
+      <button v-on:click="deleteServerRequest()">
+        Delete
+      </button>
+      <span>{{ reply }}</span>
+    </div>
+  `
 });
 
 var app = new Vue({
@@ -479,6 +629,7 @@ var app = new Vue({
         this.loggedInAlter = alter;
       },
       switchWindow(window){
+        this.loadSystemData();
         this.activewindow = window;
       },
       loadSystemData(){

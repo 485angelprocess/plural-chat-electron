@@ -1,48 +1,67 @@
-body{
-    height: 100%;
+html, body{
+  height: 100%;
+  margin: 0;
 }
 
-.messagewindow{
-  height: 90%;
+#app{
+    height: 100%;
+    color: #E688FA;
+    font-family: sans-serif;
+    margin-left: .5em;
+    margin-right: 0.5em;
+}
+
+button{
+  border: solid;
+  background-color: white;
+  padding: 0.5em;
+}
+
+#messagewindow{
+  height: 80%;
 }
 .messages{
-  font-size: 1em;
-  height: 50em;
+  font-size: 1.5em;
+  height: 80%;
   max-width: 50em;
   width: 100%;
 }
 
 .messagefeed{
-  background-color: #0F258F;
-  height: 80%;
+  background-color: #FFFFFF;
+  height: 90%;
   overflow: scroll;
 }
 
 .messagebox{
-  width: 90%;
+  width: 100%;
 }
 
 .messagebox p{
   padding: 1em;
+  margin: .1em;
+  border-width: thin;
+  border-style: solid;
 }
 
 .messageSender{
   float:right;
   margin-left: 5%;
-  background-color: #AEBDEA;
 }
 .messageRecipient{
   float:left;
-  margin-left: 10%;
-  background-color: #EBB0E4;
+  margin-left: 5%;
+  margin-right: -5%;
+  color: #111111;
 }
 
 .messagerecipientfield{
-  font-size: 10px;
+  font-size: 0.5em;
 }
 
 .messagedatefield{
   font-size: 10px;
+  width: 2em;
 }
 
 .messageinput{
@@ -55,13 +74,22 @@ body{
   font-size: 2em;
 }
 
+.alterselection{
+  height: auto;
+  width: 100%;
+  padding: 1em;
+}
+
+.alterselection button{
+  height: 4em;
+  width: 10em;
+}
+
 .alteractiveselect{
-  background-color: #000AEB;
-  color: #FFFFFF;
+  background-color:  #E688FA;
 }
 
 #preferenceswindow div{
-  background-color: #EEEEEE;
   padding: 1em;
   margin: 1em;
 }
